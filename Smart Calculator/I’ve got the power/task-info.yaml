@@ -235,6 +235,15 @@ files:
         }
     }
   learner_created: false
+- name: src/calculator/Notation.java
+  visible: true
+  learner_created: true
+- name: src/calculator/Util.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5322#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sun, 12 Dec 2021 11:59:23 UTC
 record: -1

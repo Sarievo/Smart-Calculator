@@ -1,9 +1,6 @@
 package calculator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,87 +15,60 @@ public class Main {
     static List<String> commands = List.of(
             "/help"
     );
-    static Pattern numberPattern = Pattern.compile("[-+]?\\d+");
-    static Pattern operatorPattern = Pattern.compile("=|\\++|-+");
-    static Pattern latinPattern = Pattern.compile("[a-zA-Z]+");
-    static Pattern variablePattern = Pattern.compile("[-+]?\\d+|[a-zA-Z]+");
+    static HashMap<Character, Integer> precedence = new HashMap<>();
+    static String numberRegex = "-?\\d+";
+    static Pattern numberPattern = Pattern.compile(numberRegex);
+    static String latinRegex = "[a-zA-Z]+";
+    static Pattern latinPattern = Pattern.compile(latinRegex);
+//    static Pattern variablePattern = Pattern.compile(variableRegex);
+    static String operatorRegex = "[*=/()]|\\++|-+";
+    static Pattern operatorPattern = Pattern.compile(operatorRegex);
     static HashMap<String, Long> variables = new HashMap<>();
+    static String variableRegex = numberRegex + "|" + latinRegex;
+    static Pattern notationPattern = Pattern.compile(variableRegex + "|" + operatorRegex);
+
+    static void initPrecedence(HashMap<Character, Integer> precedence) {
+        precedence.put('(', 1);
+        precedence.put(')', 1); // Parentheses
+        precedence.put('^', 2); // Exponents
+        precedence.put('*', 3); // Multiplication
+        precedence.put('/', 3); // Division
+        precedence.put('+', 4); // Addition
+        precedence.put('-', 4); // Subtraction
+    }
 
     public static void main(String[] args) {
+        initPrecedence(precedence);
         while (true) {
-            String rawInput = s.nextLine().toLowerCase().trim();
+            String raw = s.nextLine().trim();
             try {
-                if ("".equals(rawInput.trim())) {
+                if ("".equals(raw.trim())) {
                     continue;
-                } else if (rawInput.charAt(0) == '/') {
-                    if ("/exit".equals(rawInput)) {
+                } else if (raw.charAt(0) == '/') {
+                    if ("/exit".equals(raw)) {
                         break;
-                    } else if (commands.contains(rawInput)) {
-                        if ("/help".equals(rawInput)) {
+                    } else if (commands.contains(raw)) {
+                        if ("/help".equals(raw)) {
                             System.out.println("The program calculates the sum of numbers");
                             System.out.println("Supports binary minus: double-minus means plus");
+                            System.out.println("Currently no functionality at assigning an expression");
                         }
                         continue;
                     }
                     err(1);
                     continue;
-                } else if (rawInput.matches(".*\\d+[-+].*")) {
-                    err(0);
-                    continue;
                 }
 
-                List<Long> numbers = scanNumbers(rawInput);
-                List<Character> operators = scanOperators(rawInput);
-                List<String> names = scanLatinNames(rawInput);
-
-                // check validity or assign
-                if (!names.isEmpty()) {
-                    if (!operators.isEmpty() && operators.get(0) == '=') {
-                        if (operators.size() != 1 || names.size() + numbers.size() != 2) {
-                            err(2);
-                            continue;
-                        }
-                        if (numbers.size() == 0) {
-                            if (!variables.containsKey(names.get(1))) {
-                                err(3);
-                                continue;
-                            }
-                            variables.put(names.get(0), variables.get(names.get(1)));
-                        } else {
-                            variables.put(names.get(0), numbers.get(0));
-                        }
-                        continue;
-                    }
-
-                    boolean isValid = true;
-                    for (String name : names) {
-                        if (!variables.containsKey(name)) {
-                            err(3);
-                            isValid = false;
-                            break;
-                        }
-                    }
-                    if (!isValid) {
-                        continue;
-                    }
-                }
-
-                List<Long> variables = scanVariables(rawInput);
-                long result = variables.remove(0);
-                while (!variables.isEmpty()) {
-                    char operator = operators.remove(0);
-                    if (operator == '+') {
-                        result += variables.remove(0);
-                    } else {
-                        result -= variables.remove(0);
-                    }
-//                    System.out.print(result + "! ");
-                }
-//                System.out.println();
+                if (!checkValidityOrAssign(raw)) continue; // if invalid or assign, just continue
+                List<Notation> infix = scanInfix(raw);
+//                System.out.println("Scanned Infix: " + infix);
+                List<Notation> postfix = convertPostfix(infix);
+//                System.out.println("Converted Postfix: " + postfix);
+                long result = calculatePostfix(postfix);
                 System.out.println(result);
 
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 err(0);
             }
         }
@@ -106,19 +76,81 @@ public class Main {
         System.out.println("Bye!");
     }
 
-    static List<Long> scanVariables(String s) {
-        // scan all variables and map them to values
-        List<Long> matchList = new ArrayList<>();
-        Matcher regexMatcher = variablePattern.matcher(s);
-        while (regexMatcher.find()) {
-            String variable = regexMatcher.group();
-            if (variables.containsKey(variable)) {
-                matchList.add(variables.get(variable));
+    private static long calculatePostfix(List<Notation> postfix) {
+        Stack<Long> result = new Stack<>();
+
+        while (!postfix.isEmpty()) {
+            Notation element = postfix.remove(0);
+            if (element.isVariable) {
+                result.push(element.value);
             } else {
-                matchList.add(Long.parseLong(variable));
+                char operator = element.operator;
+                long a = result.pop();
+                long b = result.pop();
+                switch (operator) {
+                    case '^':
+                        result.push(Util.power(b, a));
+                        break;
+                    case '*':
+                        result.push(Util.mal(b, a));
+                        break;
+                    case '/':
+                        result.push(Util.divide(b, a));
+                        break;
+                    case '+':
+                        result.push(Util.add(b, a));
+                        break;
+                    case '-':
+                        result.push(Util.subtract(b, a));
+                        break;
+                }
             }
         }
-        return matchList;
+
+        if (result.size() != 1) {
+            System.out.println("WHAT");
+        }
+        return result.pop();
+    }
+
+    static boolean checkValidityOrAssign(String raw) {
+        List<String> names = scanNames(raw);
+        List<Long> numbers = scanNumbers(raw);
+        List<Character> assignsOrOperators = scanOperators(raw);
+
+        if (names.isEmpty()) { // if no variables
+            if (!assignsOrOperators.isEmpty()) {
+                for (char operator : assignsOrOperators) {
+                    if (operator == '=') {
+                        err(2); // err if it has an assign pattern
+                        return false;
+                    }
+                }
+            }
+        } else { // if it has variables
+            if (!assignsOrOperators.isEmpty() && assignsOrOperators.get(0) == '=') { // if it has an assign pattern
+                if (names.size() + numbers.size() != 2) {
+                    err(2); // err if it has not equal to 1 assign pattern
+                    return false;
+                } else if (numbers.size() != 0) {
+                    variables.put(names.get(0), numbers.get(0)); // assign number to variable
+                } else {
+                    if (!variables.containsKey(names.get(1))) {
+                        err(3); // err if the second variable is unknown
+                    }
+                    variables.put(names.get(0), variables.get(names.get(1))); // assign variable to variable
+                }
+                return false;
+            } else {
+                for (String name : names) {
+                    if (!variables.containsKey(name)) {
+                        err(3); // err if it has unknown variables
+                        return false;
+                    }
+                }
+            }
+        }
+        return true; // return true if it is a valid non-assign infix notation
     }
 
     static List<Long> scanNumbers(String s) {
@@ -131,33 +163,89 @@ public class Main {
         return matchList;
     }
 
-    static List<Character> scanOperators(String s) {
-        // only scan operator symbols
-        List<Character> matchList = new ArrayList<>();
-        Matcher regexMatcher = operatorPattern.matcher(s);
-        while (regexMatcher.find()) {
-            String fetched = regexMatcher.group();
-            if (fetched.charAt(0) == '-' && fetched.length() % 2 == 0) {
-                matchList.add('+');
-            } else {
-                matchList.add(regexMatcher.group().charAt(0));
-            }
-//            if (regexMatcher.group(1) != null) {
-//            } else {
-//                matchList.add(regexMatcher.group(0).charAt(0));
-//            }
-        }
-//        System.out.println(matchList);
-        return matchList;
-    }
-
-    static List<String> scanLatinNames(String s) {
+    static List<String> scanNames(String s) {
         List<String> matchList = new ArrayList<>();
         Matcher regexMatcher = latinPattern.matcher(s);
         while (regexMatcher.find()) {
             matchList.add(regexMatcher.group());
         }
         return matchList;
+    }
+
+    static List<Character> scanOperators(String s) {
+        // only scan operator symbols
+        List<Character> matchList = new ArrayList<>();
+        Matcher regexMatcher = operatorPattern.matcher(s);
+        while (regexMatcher.find()) {
+            matchList.add(regexMatcher.group().charAt(0)); // if it's any notation just add at this step
+        }
+        return matchList;
+    }
+
+    static List<Notation> scanInfix(String s) {
+        // scan all variables and map them to values
+        List<Notation> matchList = new ArrayList<>();
+        Matcher notationMatcher = notationPattern.matcher(s);
+        while (notationMatcher.find()) {
+            String notation = notationMatcher.group();
+            if (notation.matches(variableRegex)) { // if it's a variable, append its value
+                if (variables.containsKey(notation)) {
+                    matchList.add(new Notation(variables.get(notation)));
+                } else {
+                    matchList.add(new Notation(Long.parseLong(notation)));
+                }
+            } else { // if it's an operator, append its symbol
+                if (notation.charAt(0) == '-' && notation.length() % 2 == 0) {
+                    matchList.add(new Notation('+')); // if it's some even minus, append plus
+                } else {
+                    matchList.add(new Notation(notation.charAt(0)));
+                }
+            }
+        }
+        return matchList;
+    }
+
+    static List<Notation> convertPostfix(List<Notation> infix) {
+        List<Notation> postfix = new ArrayList<>();
+        Stack<Character> stack = new Stack<>();
+
+        while (!infix.isEmpty()) {
+            Notation symbol = infix.remove(0);
+            if (symbol.isVariable) {
+                postfix.add(symbol); // 1. Add operands (numbers and variables) to the result (postfix notation) as they arrive.
+            } else {
+                char operator = symbol.operator; // then it's an operator
+                if (stack.isEmpty() || stack.peek() == '(' || operator == '(') { // 5. If the incoming element is a left parenthesis, push it on the stack.
+                    stack.push(operator); // 2. If the stack is empty or contains a left parenthesis on top, push the incoming operator on the stack.
+                    continue;
+                }
+
+                if (operator == ')') { // 6. If the incoming element is a right parenthesis, pop the stack and add operators to the result until you see a left parenthesis.
+                    while (stack.peek() != '(') {
+                        postfix.add(new Notation(stack.pop()));
+                    }
+                    stack.pop(); // Discard the pair of parentheses.
+                    continue;
+                }
+
+                if (precedence.get(operator) < precedence.get(stack.peek())) {
+                    stack.push(operator); // 3. If the incoming operator has higher precedence than the top of the stack, push it on the stack.
+                } else {
+                    do {
+                        postfix.add(new Notation(stack.pop())); // 4. If the incoming operator has lower or equal precedence than the top of the operator stack, pop the stack and add operators to the result until you see an operator that has a smaller precedence or a left parenthesis on the top of the stack;
+                    } while (!stack.isEmpty()
+                            && precedence.get(operator) >= precedence.get(stack.peek())
+                            && stack.peek() != '(');
+                    stack.push(operator); // then add the incoming operator to the stack.
+                }
+            }
+        }
+
+        while (!stack.isEmpty()) { // 7. At the end of the expression, pop the stack and add all operators to the result.
+//            System.out.println(stack);
+            postfix.add(new Notation(stack.pop()));
+        }
+        return postfix;
     }
 
     static void err(int i) {

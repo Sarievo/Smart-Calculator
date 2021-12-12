@@ -292,5 +292,8 @@ files:
     }
   learner_created: false
 feedback_link: https://hyperskill.org/learn/step/5321#comment
-status: Unchecked
-record: -1
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sat, 11 Dec 2021 17:49:05 UTC
+record: 6
