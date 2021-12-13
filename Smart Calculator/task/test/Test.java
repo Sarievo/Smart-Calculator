@@ -30,7 +30,7 @@ public class Test extends StageTest<String> {
                     }
 
                     // testing basic assignment
-                    output = main.execute("n = -32");
+                    output = main.execute("n = 32");
                     if (output.length() != 0) {
                         return CheckResult.wrong("Unexpected reaction after assignment." +
                                 "The program should not print anything in this case.");
@@ -43,27 +43,27 @@ public class Test extends StageTest<String> {
                     }
 
                     // the same with a variable
-                    output = main.execute("33 + 20 + 11 + 49 + n - 9 + 1 - 80 + 4").trim();
+                    output = main.execute("33 + 20 + 11 + 49 - n - 9 + 1 - 80 + 4").trim();
                     if (!output.equals("-3")) {
                         return CheckResult.wrong("The program cannot process addition and subtraction operations correctly.");
                     }
 
 
-                    output = main.execute("c = n \nc = -2");
+                    output = main.execute("c = n \nc = 2");
                     if (output.length() != 0) {
                         return CheckResult.wrong("Unexpected reaction after assignment." +
                                 "The program should not print anything in this case.");
                     }
 
                     // check value
-                    output = main.execute("  c   ").trim();
-                    if (!output.equals("-2")) {
+                    output = main.execute("  c  ").trim();
+                    if (!output.equals("2")) {
                         return CheckResult.wrong("The variable stores not a correct value." +
                                 "May be the program could not assign the value of one variable to another one.");
                     }
 
                     // the sum of the numbers is zero
-                    output = main.execute("11 - 9 + c").trim();
+                    output = main.execute("11 - 13 + c").trim();
                     if (!output.equals("0")) {
                         return CheckResult.wrong("The problem when sum is equal to 0 has occurred.");
                     }
@@ -108,7 +108,14 @@ public class Test extends StageTest<String> {
                     // checking case sensitivity
                     main.execute("variable = 777");
                     output = main.execute("Variable").trim().toLowerCase();
-                    if (!output.startsWith("unknown") && !output.startsWith("invalid")) {
+                    if (!output.startsWith("unknown")) {
+                        return CheckResult.wrong("The program should be case sensitive.");
+                    }
+
+                    // checking case sensitivity
+                    main.execute("variable = 777");
+                    output = main.execute("Variable").trim().toLowerCase();
+                    if (!output.startsWith("unknown")) {
                         return CheckResult.wrong("The program should be case sensitive.");
                     }
 
@@ -163,8 +170,8 @@ public class Test extends StageTest<String> {
                         return CheckResult.wrong("The program cannot reproduce an example from the task.");
                     }
 
-//                    // test with a big amount of brackets
-//                    output = main.execute("3 + (9 + ( 68 * 3 / 9)) * ((7 - 2 * 5) / 2) * 6").trim();
+//                    // test case with a big amount of brackets
+//                    output = main.execute("3 + (9 + ( 68 * 3/9)) * ((7-2 * 5) / 2) * 6").trim();
 //                    if (!output.equals("-282")) {
 //                        return CheckResult.wrong("Program incorrectly solves expressions with multi-level parentheses");
 //                    }
@@ -209,7 +216,84 @@ public class Test extends StageTest<String> {
                     }
 
                     return new CheckResult(main.isFinished(), "Your program should exit after entering \"/exit\".");
+                }),
+                new TestCase<String>().setDynamicTesting(() -> {
+                    TestedProgram main = new TestedProgram();
+
+                    // test suit for the 8th stage with very large numbers
+                    main.start();
+
+                    // testing basic assignment
+                    String output = main.execute("n = 32000000000000000000");
+                    if (output.length() != 0) {
+                        return CheckResult.wrong("Unexpected reaction after assignment." +
+                                "The program should not print anything in this case.");
+                    }
+
+                    // testing a big amount of numbers
+                    output = main.execute("33000000000000000000 + 20000000000000000000 + 11000000000000000000 + " +
+                            "49000000000000000000 - 32000000000000000000 - 9000000000000000000 " +
+                            "+ 1000000000000000000 - 80000000000000000000 + 4000000000000000000 + 1").trim();
+                    if (!output.equals("-2999999999999999999")) {
+                        return CheckResult.wrong("The program cannot process addition and subtraction operations correctly.");
+                    }
+
+                    // the same with a variable
+                    output = main.execute(
+                        "33000000000000000000 + 20000000000000000000 + 11000000000000000000 + " +
+                            "49000000000000000000 - n - 9000000000000000000 " +
+                            "+ 1000000000000000000 - 80000000000000000000 + 4000000000000000000 + 1").trim();
+                    if (!output.equals("-2999999999999999999")) {
+                        return CheckResult.wrong(
+                            "The program cannot process addition " +
+                                "and subtraction operations correctly.");
+                    }
+
+                    // testing reassignment with big values
+                    output = main.execute("c = n \nc = 2000000000000000000000");
+                    if (output.length() != 0) {
+                        return CheckResult.wrong("Unexpected reaction after assignment." +
+                                "The program should not print anything in this case.");
+                    }
+
+                    // check value
+                    output = main.execute("  c   ").trim();
+                    if (!output.equals("2000000000000000000000")) {
+                        return CheckResult.wrong("The variable stores not a correct value." +
+                                "May be the program could not assign the value of one variable to another one.");
+                    }
+
+                    // the sum of the numbers is zero
+                    output = main.execute("11000000000000000000 - 9000000000000000000 - " +
+                            "c + 1998000000000000000000").trim();
+                    if (!output.equals("0")) {
+                        return CheckResult.wrong("The problem when sum is equal to 0 has occurred.");
+                    }
+
+                    // test of multiple operations
+                    output = main.execute("5000000000000000000 --- 2000000000000000000 " +
+                            "++++++ 4000000000000000000 -- 2000000000000000000 ---- 1000000000000000000").trim();
+                    if (!output.equals("10000000000000000000")) {
+                        return CheckResult.wrong("The program cannot process multiple operations with several operators.");
+                    }
+
+                    // testing all operators, with variables
+                    main.execute(" a= 7000000000000000000 \n b =2000000000000000000");
+                    output = main.execute("a * 4000000000000000000 / " +
+                            "b - (3000000000000000000 - 1000000000000000000)").trim();
+                    if (!output.equals("12000000000000000000")) {
+                        return CheckResult.wrong("The program cannot correctly process several operations.");
+                    }
+
+                    // test of /exit
+                    output = main.execute("/exit").trim().toLowerCase();
+                    if (!output.startsWith("bye")) {
+                        return CheckResult.wrong("Your program didn't print \"bye\" after entering \"/exit\".");
+                    }
+
+                    return new CheckResult(main.isFinished(), "Your program should exit after entering \"/exit\".");
                 })
+
         );
     }
 }

@@ -319,6 +319,64 @@ files:
         }
     }
   learner_created: false
+- name: src/calculator/Util.java
+  visible: true
+  text: |
+    package calculator;
+
+    public class Util {
+        static long power(long a, long b) {
+            // cast to long power
+            return (long) Math.pow(a, b);
+        }
+
+        static long mal(long a, long b) {
+            return a * b;
+        }
+
+        static long divide(long a, long b) {
+            // integer division
+            return a / b;
+        }
+
+        static long add(long a, long b) {
+            return a + b;
+        }
+
+        static long subtract(long a, long b) {
+            return a - b;
+        }
+    }
+  learner_created: true
+- name: src/calculator/Notation.java
+  visible: true
+  text: |
+    package calculator;
+
+    public class Notation {
+        long value;
+        char operator;
+        boolean isVariable;
+
+        Notation(long value) {
+            this.value = value;
+            isVariable = true;
+        }
+
+        Notation(char operator) {
+            this.operator = operator;
+            isVariable = false;
+        }
+
+        @Override
+        public String toString() {
+            return isVariable ? String.valueOf(value) : String.valueOf(operator);
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5323#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sun, 12 Dec 2021 12:42:13 UTC
 record: -1

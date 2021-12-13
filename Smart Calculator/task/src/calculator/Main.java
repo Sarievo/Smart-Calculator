@@ -1,5 +1,6 @@
 package calculator;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,8 @@ public class Main {
 //    static Pattern variablePattern = Pattern.compile(variableRegex);
     static String operatorRegex = "[*=/()]|\\++|-+";
     static Pattern operatorPattern = Pattern.compile(operatorRegex);
-    static HashMap<String, Long> variables = new HashMap<>();
+    static HashMap<String, BigInteger> variables = new HashMap<>();
+//    static HashMap<String, Long> variables = new HashMap<>();
     static String variableRegex = numberRegex + "|" + latinRegex;
     static Pattern notationPattern = Pattern.compile(variableRegex + "|" + operatorRegex);
 
@@ -52,6 +54,7 @@ public class Main {
                             System.out.println("The program calculates the sum of numbers");
                             System.out.println("Supports binary minus: double-minus means plus");
                             System.out.println("Currently no functionality at assigning an expression");
+                            System.out.println("    or negative numbers not separated by a space");
                         }
                         continue;
                     }
@@ -64,7 +67,7 @@ public class Main {
 //                System.out.println("Scanned Infix: " + infix);
                 List<Notation> postfix = convertPostfix(infix);
 //                System.out.println("Converted Postfix: " + postfix);
-                long result = calculatePostfix(postfix);
+                BigInteger result = calculatePostfix(postfix);
                 System.out.println(result);
 
             } catch (Exception e) {
@@ -76,8 +79,9 @@ public class Main {
         System.out.println("Bye!");
     }
 
-    private static long calculatePostfix(List<Notation> postfix) {
-        Stack<Long> result = new Stack<>();
+    private static BigInteger calculatePostfix(List<Notation> postfix) {
+        Stack<BigInteger> result = new Stack<>();
+//        Stack<Long> result = new Stack<>();
 
         while (!postfix.isEmpty()) {
             Notation element = postfix.remove(0);
@@ -85,23 +89,30 @@ public class Main {
                 result.push(element.value);
             } else {
                 char operator = element.operator;
-                long a = result.pop();
-                long b = result.pop();
+                BigInteger a = result.pop();
+                BigInteger b = result.pop();
+//                long a = result.pop();
+//                long b = result.pop();
                 switch (operator) {
                     case '^':
-                        result.push(Util.power(b, a));
+                        result.push(b.pow(Integer.parseInt(a.toString())));
+//                        result.push(Util.power(b, a));
                         break;
                     case '*':
-                        result.push(Util.mal(b, a));
+                        result.push(b.multiply(a));
+//                        result.push(Util.mal(b, a));
                         break;
                     case '/':
-                        result.push(Util.divide(b, a));
+                        result.push(b.divide(a));
+//                        result.push(Util.divide(b, a));
                         break;
                     case '+':
-                        result.push(Util.add(b, a));
+                        result.push(b.add(a));
+//                        result.push(Util.add(b, a));
                         break;
                     case '-':
-                        result.push(Util.subtract(b, a));
+                        result.push(b.subtract(a));
+//                        result.push(Util.subtract(b, a));
                         break;
                 }
             }
@@ -115,7 +126,8 @@ public class Main {
 
     static boolean checkValidityOrAssign(String raw) {
         List<String> names = scanNames(raw);
-        List<Long> numbers = scanNumbers(raw);
+        List<BigInteger> numbers = scanNumbers(raw);
+//        List<Long> numbers = scanNumbers(raw);
         List<Character> assignsOrOperators = scanOperators(raw);
 
         if (names.isEmpty()) { // if no variables
@@ -137,6 +149,7 @@ public class Main {
                 } else {
                     if (!variables.containsKey(names.get(1))) {
                         err(3); // err if the second variable is unknown
+                        return false;
                     }
                     variables.put(names.get(0), variables.get(names.get(1))); // assign variable to variable
                 }
@@ -153,21 +166,23 @@ public class Main {
         return true; // return true if it is a valid non-assign infix notation
     }
 
-    static List<Long> scanNumbers(String s) {
-        // only scan numbers
-        List<Long> matchList = new ArrayList<>();
-        Matcher regexMatcher = numberPattern.matcher(s);
-        while (regexMatcher.find()) {
-            matchList.add(Long.parseLong(regexMatcher.group()));
-        }
-        return matchList;
-    }
-
     static List<String> scanNames(String s) {
         List<String> matchList = new ArrayList<>();
         Matcher regexMatcher = latinPattern.matcher(s);
         while (regexMatcher.find()) {
             matchList.add(regexMatcher.group());
+        }
+        return matchList;
+    }
+
+    static List<BigInteger> scanNumbers(String s) {
+        // only scan numbers
+        List<BigInteger> matchList = new ArrayList<>();
+//        List<Long> matchList = new ArrayList<>();
+        Matcher regexMatcher = numberPattern.matcher(s);
+        while (regexMatcher.find()) {
+            matchList.add(new BigInteger(regexMatcher.group()));
+//            matchList.add(Long.parseLong(regexMatcher.group()));
         }
         return matchList;
     }
@@ -192,7 +207,8 @@ public class Main {
                 if (variables.containsKey(notation)) {
                     matchList.add(new Notation(variables.get(notation)));
                 } else {
-                    matchList.add(new Notation(Long.parseLong(notation)));
+                    matchList.add(new Notation(new BigInteger(notation)));
+//                    matchList.add(new Notation(Long.parseLong(notation)));
                 }
             } else { // if it's an operator, append its symbol
                 if (notation.charAt(0) == '-' && notation.length() % 2 == 0) {

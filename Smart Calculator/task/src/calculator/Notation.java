@@ -1,14 +1,21 @@
 package calculator;
 
+import java.math.BigInteger;
+
 public class Notation {
-    long value;
+    BigInteger value;
+//    long value;
     char operator;
     boolean isVariable;
 
-    Notation(long value) {
+    Notation(BigInteger value) {
         this.value = value;
         isVariable = true;
     }
+//    Notation(long value) {
+//        this.value = value;
+//        isVariable = true;
+//    }
 
     Notation(char operator) {
         this.operator = operator;
