@@ -22,7 +22,7 @@ public class Main {
     static String latinRegex = "[a-zA-Z]+";
     static Pattern latinPattern = Pattern.compile(latinRegex);
 //    static Pattern variablePattern = Pattern.compile(variableRegex);
-    static String operatorRegex = "[*=/()]|\\++|-+";
+    static String operatorRegex = "[*=/()^]|\\++|-+";
     static Pattern operatorPattern = Pattern.compile(operatorRegex);
     static HashMap<String, BigInteger> variables = new HashMap<>();
 //    static HashMap<String, Long> variables = new HashMap<>();
@@ -30,9 +30,9 @@ public class Main {
     static Pattern notationPattern = Pattern.compile(variableRegex + "|" + operatorRegex);
 
     static void initPrecedence(HashMap<Character, Integer> precedence) {
-        precedence.put('(', 1);
-        precedence.put(')', 1); // Parentheses
-//        precedence.put('^', 2); // Exponents
+//        precedence.put('(', 1);
+//        precedence.put(')', 1); // Parentheses
+        precedence.put('^', 2); // Exponents
         precedence.put('*', 3); // Multiplication
         precedence.put('/', 3); // Division
         precedence.put('+', 4); // Addition
@@ -94,10 +94,10 @@ public class Main {
 //                long a = result.pop();
 //                long b = result.pop();
                 switch (operator) {
-//                    case '^':
-//                        result.push(b.pow(Integer.parseInt(a.toString())));
-////                        result.push(Util.power(b, a));
-//                        break;
+                    case '^':
+                        result.push(b.pow(Integer.parseInt(a.toString())));
+//                        result.push(Util.power(b, a));
+                        break;
                     case '*':
                         result.push(b.multiply(a));
 //                        result.push(Util.mal(b, a));
