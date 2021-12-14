@@ -30,13 +30,13 @@ public class Main {
     static Pattern notationPattern = Pattern.compile(variableRegex + "|" + operatorRegex);
 
     static void initPrecedence(HashMap<Character, Integer> precedence) {
-//        precedence.put('(', 1);
-//        precedence.put(')', 1); // Parentheses
-        precedence.put('^', 2); // Exponents
-        precedence.put('*', 3); // Multiplication
-        precedence.put('/', 3); // Division
-        precedence.put('+', 4); // Addition
-        precedence.put('-', 4); // Subtraction
+        precedence.put('(', 0);
+        precedence.put(')', 0);
+        precedence.put('^', 1); // Exponents
+        precedence.put('*', 2); // Multiplication
+        precedence.put('/', 2); // Division
+        precedence.put('+', 3); // Addition
+        precedence.put('-', 3); // Subtraction
     }
 
     public static void main(String[] args) {

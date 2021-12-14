@@ -138,18 +138,9 @@ files:
     }
   learner_created: false
 feedback_link: https://hyperskill.org/learn/step/5317#comment
-status: Failed
+status: Solved
 feedback:
-  message: |-
-    Wrong answer in test #1
-
-    It seems like there was no any &quot;help&quot; message.
-
-    Please find below the output of your program during this failed test.
-    Note that the &#39;&gt;&#39; character indicates the beginning of the input line.
-
-    ---
-
-    &gt; /help
-  time: Sat, 11 Dec 2021 13:45:38 UTC
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+    Academy</a> to continue learning.
+  time: Tue, 14 Dec 2021 06:09:37 UTC
 record: 2

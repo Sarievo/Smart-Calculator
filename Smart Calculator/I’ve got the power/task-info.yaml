@@ -235,10 +235,10 @@ files:
         }
     }
   learner_created: false
-- name: src/calculator/Notation.java
+- name: src/calculator/Util.java
   visible: true
   learner_created: true
-- name: src/calculator/Util.java
+- name: src/calculator/Notation.java
   visible: true
   learner_created: true
 feedback_link: https://hyperskill.org/learn/step/5322#comment
